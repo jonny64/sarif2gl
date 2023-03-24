@@ -1,12 +1,12 @@
 // fetch: node 18+
 const fs = require ('fs')
 
-const {CI_JOB_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_DIFF_BASE_SHA, CI_MERGE_REQUEST_IID} = process.env
+const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_DIFF_BASE_SHA, CI_MERGE_REQUEST_IID} = process.env
 const sarif_file = process.argv [2]
 
 const gitlab_rq = async  (o) => {
     const headers = {
-        'Authorization' : `Bearer ${CI_JOB_TOKEN}`,
+        'Authorization' : `Bearer ${SDL_BOT_TOKEN}`,
     }
 
     const project_path = 'projects/' + CI_PROJECT_PATH.split ('/').join ('%2F')
