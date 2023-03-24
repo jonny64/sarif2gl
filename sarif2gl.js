@@ -52,6 +52,7 @@ const post2gl = async (todo) => {
     for (let i of todo) {
         let params = {
             'position[new_path]': i.src,
+            'position[old_path]': i.src,
             'position[new_line]': `${i.line}`,
             'position[position_type]': 'text',
             'position[base_sha]': CI_MERGE_REQUEST_DIFF_BASE_SHA,
