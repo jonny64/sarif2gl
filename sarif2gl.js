@@ -31,6 +31,7 @@ const parse = (sarif) => {
     let result = []
     for (let rr of sarif.runs) {
         for (let r of rr.results) {
+            if (r.suppressions) continue
             let text = r.message.text
             let todo = r.locations.map (loc => {
                 let {physicalLocation} = loc
