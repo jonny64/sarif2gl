@@ -59,7 +59,7 @@ const post2gl = async (todo) => {
     
     let body = lines.join ("\n")
     
-    await gitlab_rq ({body})
+    await gitlab_rq ({params: body})
 }
 
 let sarif = JSON.parse (fs.readFileSync (sarif_file, 'utf8'))
