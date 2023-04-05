@@ -1,7 +1,7 @@
 // fetch: node 18+
 const fs = require ('fs')
 
-const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID} = process.env
+const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
 const sarif_file = process.argv [2]
 
 const gitlab_rq = async  (o) => {
@@ -15,11 +15,11 @@ const gitlab_rq = async  (o) => {
     let url = `${CI_SERVER_URL}/api/v4/`
      + `${project_path}/merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
 
-    let body = new URLSearchParams (o.params)
+    url = url + '?body=' + (new URLSearchParams (o.body)).toString()
 
-    console.log ({headers, body, url})
+    console.log ({headers, body: '', url})
 
-    const rp_raw = await fetch(url, {headers, body, method: 'POST'})
+    const rp_raw = await fetch(url, {headers, body: '', method: 'POST'})
     const rp = await rp_raw.json ()
     const web_url = rp.notes ? (url + '#note_' + rp.notes[0].id) : null
 
@@ -52,7 +52,9 @@ const parse = (sarif) => {
 
 const post2gl = async (todo) => {
 
-    let lines = [`${sarif_file}`]
+    if (!todo.length) return
+
+    let lines = [`${sarif_file} ${CI_PIPELINE_URL}`]
     
     for (let i of todo) {
         let line = `${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#${i.line}: ${i.text}`
@@ -61,7 +63,7 @@ const post2gl = async (todo) => {
     
     let body = lines.join ("\n")
     
-    await gitlab_rq ({params: body})
+    await gitlab_rq ({body})
 }
 
 let sarif = JSON.parse (fs.readFileSync (sarif_file, 'utf8'))
