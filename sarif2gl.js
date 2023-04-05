@@ -57,7 +57,7 @@ const post2gl = async (todo) => {
     let lines = [`${sarif_file} ${CI_PIPELINE_URL}`]
     
     for (let i of todo) {
-        let line = `${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line}: ${i.text}`
+        let line = `[${i.src}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line}): ${i.text}`
         lines.push (line)
     }
     
