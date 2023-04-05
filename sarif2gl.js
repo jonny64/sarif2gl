@@ -7,6 +7,7 @@ const sarif_file = process.argv [2]
 const gitlab_rq = async  (o) => {
     const headers = {
         'Authorization' : `Bearer ${SDL_BOT_TOKEN}`,
+        'Content-Type' : 'application/json'
     }
 
     const project_path = 'projects/' + CI_PROJECT_PATH.split ('/').join ('%2F')
