@@ -31,6 +31,13 @@ const gitlab_rq = async  (o) => {
 const parse = (sarif) => {
     let result = []
     for (let rr of sarif.runs) {
+
+        let idx = {}
+
+        for (let i of rr.tool.driver.rules || []) {
+            idx [i.id] = i
+        }
+
         for (let r of rr.results) {
             if (r.suppressions) continue
             let text = r.message.text
@@ -40,8 +47,10 @@ const parse = (sarif) => {
                 let src = artifactLocation.uri
                 src = src.replace ('/src/', '')
                 let line  = physicalLocation.region.endLine
+                let rule_id = r.ruleId
+                let rule_help_ui = idx [rule_id].helpUri
                 return {
-                    src, line, text
+                    rule_id, src, line, rule_help_ui, text
                 }
             })
             result = result.concat (todo)
@@ -57,7 +66,7 @@ const post2gl = async (todo) => {
     let lines = [`${sarif_file} ${CI_PIPELINE_URL}`]
     
     for (let i of todo) {
-        let line = `${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#${i.line}: ${i.text}`
+        let line = `${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#${i.line}: [${i.rule_id}](${i.rule_help_ui}) ${i.text}`
         lines.push (line)
     }
     
