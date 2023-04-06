@@ -64,14 +64,20 @@ const post2gl = async (todo) => {
     if (!todo.length) return
 
     let lines = [
-        `[${sarif_file}](${CI_PIPELINE_URL})  \n`
+        `[${sarif_file}](${CI_PIPELINE_URL})  \n`,
+        `| src | rule | desc |`,
+        `| --- | ---  | ---  |`,
     ]
     
     for (let i of todo) {
-        let line = `[${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line}): [${i.rule_id}](${i.rule_help_ui}) ${i.text}`
+        let line = `| `
+            + `[${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`
+            + ` | [${i.rule_id}](${i.rule_help_ui})`
+            + ` | ${i.text}`
+            + ` |`
         lines.push (line)
     }
-    
+
     let body = lines.join ("  \n")
     
     await gitlab_rq ({body})
