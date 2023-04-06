@@ -78,7 +78,9 @@ const post2gl = async (todo) => {
         lines.push (line)
     }
 
-    let body = lines.join ("\n")
+    let body = {
+        body: lines.join ("\n")
+    }
     
     await gitlab_rq ({body})
 }
