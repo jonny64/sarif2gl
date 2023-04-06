@@ -15,11 +15,11 @@ const gitlab_rq = async  (o) => {
     let url = `${CI_SERVER_URL}/api/v4/`
      + `${project_path}/merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
 
-    url = url + '?body=' + (new URLSearchParams (o.body)).toString()
+    let body = JSON.stringify (o.body)
 
-    console.log ({headers, body: '', url})
+    console.log ({headers, body, url})
 
-    const rp_raw = await fetch(url, {headers, body: '', method: 'POST'})
+    const rp_raw = await fetch(url, {headers, body, method: 'POST'})
     const rp = await rp_raw.json ()
     const web_url = rp.notes ? (url + '#note_' + rp.notes[0].id) : null
 
@@ -78,7 +78,7 @@ const post2gl = async (todo) => {
         lines.push (line)
     }
 
-    let body = lines.join ("  \n")
+    let body = lines.join ("\n")
     
     await gitlab_rq ({body})
 }
