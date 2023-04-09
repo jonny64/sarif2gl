@@ -1,7 +1,7 @@
 // fetch: node 18+
 const fs = require ('fs')
 
-const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
+const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_DIR, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
 const [_, __, ...sarif_files] = process.argv
 const SARIF2GL_NOTE_SIGN = 'sarif2gl'
 
@@ -51,6 +51,7 @@ const parse = (sarif) => {
                 let {physicalLocation} = loc
                 let {artifactLocation} = physicalLocation
                 let src = artifactLocation.uri
+                src = src.replace (`file://${CI_PROJECT_DIR}`, '')
                 src = src.replace ('/src/', '')
                 let line  = physicalLocation.region.endLine
                 let rule_id = r.ruleId
