@@ -12,14 +12,17 @@ const gitlab_rq = async  (o) => {
 
     const project_path = 'projects/' + CI_PROJECT_PATH.split ('/').join ('%2F')
 
-    let url = `${CI_SERVER_URL}/api/v4/`
-     + `${project_path}/merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
+    let url = `${CI_SERVER_URL}/api/v4/${project_path}/${o.url}`
 
-    let body = JSON.stringify (o.body)
+    const options = {headers, method: o.method || 'POST'}
 
-    console.log ({headers, body, url})
+    if (['POST', 'PUT'].includes (options.method)) {
+        options.body = JSON.stringify (o.body)
+    }
 
-    const rp_raw = await fetch(url, {headers, body, method: 'POST'})
+    console.log ({options})
+
+    const rp_raw = await fetch(url, options)
     const rp = await rp_raw.json ()
     const web_url = rp.notes ? (url + '#note_' + rp.notes[0].id) : null
 
@@ -59,9 +62,55 @@ const parse = (sarif) => {
     return result
 }
 
-const post2gl = async (todo) => {
+const find_note = (discussions, sign) => {
 
-    if (!todo.length) return
+    for (let discussion of discussions || []) {
+
+        if (discussion.individual_note) continue
+
+        for (let note of discussion.notes || []) {
+            if (note.body && note.body.includes (sign)) {
+                return {discussion, note}
+            }
+        }
+    }
+
+    return {}
+}
+
+const post2gl = async (note) => {
+
+    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
+
+    let discussions = await gitlab_rq ({body: '', url, method: 'GET'})
+
+    let d = find_note (discussions, sarif_file)
+
+    if (!d.note) { // create
+
+        if (note == 'OK') return
+
+        let body = {
+            body: note
+        }
+
+        console.log (`no note found, creating new...`)
+
+        return gitlab_rq ({body, url})
+    }
+
+    let url_edit = `${url}/${d.discussion.id}/notes/${d.note.id}`
+
+    let body = note == 'OK'? {resolved: 'true'} : {body: note}
+
+    console.log (`note found, editing...`)
+
+    return gitlab_rq ({body, url: url_edit, method: 'PUT'})
+}
+
+const to_note = (todo) => {
+
+    if (!todo.length) return 'OK'
 
     let lines = [
         `[${sarif_file}](${CI_PIPELINE_URL})  \n`,
@@ -78,13 +127,10 @@ const post2gl = async (todo) => {
         lines.push (line)
     }
 
-    let body = {
-        body: lines.join ("\n")
-    }
-    
-    await gitlab_rq ({body})
+    return lines.join ("\n")
 }
 
 let sarif = JSON.parse (fs.readFileSync (sarif_file, 'utf8'))
 let todo = parse (sarif)
-post2gl (todo)
+let note = to_note (todo)
+post2gl (note)
