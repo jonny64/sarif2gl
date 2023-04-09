@@ -2,7 +2,8 @@
 const fs = require ('fs')
 
 const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
-const sarif_file = process.argv [2]
+const [_, __, ...sarif_files] = process.argv
+const SARIF2GL_NOTE_SIGN = 'sarif2gl'
 
 const gitlab_rq = async  (o) => {
     const headers = {
@@ -37,7 +38,9 @@ const parse = (sarif) => {
 
         let idx = {}
 
-        for (let i of rr.tool.driver.rules || []) {
+        let driver = rr.tool.driver
+
+        for (let i of driver.rules || []) {
             idx [i.id] = i
         }
 
@@ -53,7 +56,11 @@ const parse = (sarif) => {
                 let rule_id = r.ruleId
                 let rule_help_ui = idx [rule_id].helpUri
                 return {
-                    rule_id, src, line, rule_help_ui, text
+                    rule_id,
+                    src,
+                    line,
+                    rule_help_ui,
+                    text,
                 }
             })
             result = result.concat (todo)
@@ -84,7 +91,7 @@ const post2gl = async (note) => {
 
     let discussions = await gitlab_rq ({body: '', url, method: 'GET'})
 
-    let d = find_note (discussions, sarif_file)
+    let d = find_note (discussions, SARIF2GL_NOTE_SIGN)
 
     if (!d.note) { // create
 
@@ -113,24 +120,37 @@ const to_note = (todo) => {
     if (!todo.length) return 'OK'
 
     let lines = [
-        `[${sarif_file}](${CI_PIPELINE_URL})  \n`,
         `| src | rule | desc |`,
         `| --- | ---  | ---  |`,
     ]
     
     for (let i of todo) {
-        let line = `| `
-            + `[${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`
+        let line = ``
+            + `| [${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`
             + ` | [${i.rule_id}](${i.rule_help_ui})`
             + ` | ${i.text}`
             + ` |`
         lines.push (line)
     }
 
+    lines.push ("\n\n")
+    lines.push (`reported by [${SARIF2GL_NOTE_SIGN}](${CI_PIPELINE_URL})  \n`)
+
     return lines.join ("\n")
 }
 
-let sarif = JSON.parse (fs.readFileSync (sarif_file, 'utf8'))
-let todo = parse (sarif)
+let todo = []
+
+for (let f of sarif_files) {
+
+    let s = JSON.parse (fs.readFileSync (f, 'utf8'))
+
+    let t = parse (s)
+
+    todo = todo.concat (t)
+
+}
+
 let note = to_note (todo)
+
 post2gl (note)
