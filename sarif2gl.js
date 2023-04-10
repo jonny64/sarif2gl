@@ -51,7 +51,8 @@ const parse = (sarif) => {
                 let {physicalLocation} = loc
                 let {artifactLocation} = physicalLocation
                 let src = artifactLocation.uri
-                src = src.replace (`file://${CI_PROJECT_DIR}`, '')
+                src = src.replace (`file://`, '')
+                src = src.replace (`CI_PROJECT_DIR, '')
                 src = src.replace ('/src/', '')
                 let line  = physicalLocation.region.endLine
                 let rule_id = r.ruleId
