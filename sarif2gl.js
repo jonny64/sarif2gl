@@ -33,7 +33,16 @@ const gitlab_rq = async  (o) => {
 }
 
 const parse = (sarif) => {
+
     let result = []
+
+    let fix_src = (src) => {
+        src = src.replace (`file://`, '')
+        src = src.replace (CI_PROJECT_DIR, '')
+        src = src.replace ('/src/', '')
+        return src
+    }
+
     for (let rr of sarif.runs) {
 
         let idx = {}
@@ -50,11 +59,8 @@ const parse = (sarif) => {
             let todo = r.locations.map (loc => {
                 let {physicalLocation} = loc
                 let {artifactLocation} = physicalLocation
-                let src = artifactLocation.uri
-                src = src.replace (`file://`, '')
-                src = src.replace (CI_PROJECT_DIR, '')
-                src = src.replace ('/src/', '')
-                let line  = physicalLocation.region.endLine
+                let src = fix_src (artifactLocation.uri)
+                let line = physicalLocation.region.endLine || physicalLocation.region.startLine
                 let rule_id = r.ruleId
                 let rule_help_ui = idx [rule_id].helpUri
                 return {
@@ -67,7 +73,38 @@ const parse = (sarif) => {
             })
             result = result.concat (todo)
         }
+
+        for (let i of rr.invocations || []) {
+            for (let n of i.toolExecutionNotifications || []) {
+                result.push ({
+                    rule_id: '',
+                    src: '',
+                    line: '',
+                    rule_help_ui: '',
+                    text: n.message.text,
+                })
+            }
+            for (let n of i.toolConfigurationNotifications || []) {
+                let text = n.message.text
+                console.log ({n})
+                let todo = (n.locations || []).map (loc => {
+                    let {physicalLocation} = loc
+                    let {artifactLocation} = physicalLocation
+                    let src = fix_src (artifactLocation.uri)
+                    let line = physicalLocation.region.endLine || physicalLocation.region.startLine
+                    return {
+                        rule_id: '',
+                        src,
+                        line,
+                        rule_help_ui: '',
+                        text,
+                    }
+                })
+                result = result.concat (todo)
+            }
+        }
     }
+
     return result
 }
 
@@ -125,14 +162,23 @@ const to_note = (todo) => {
         `| src | rule | desc |`,
         `| --- | ---  | ---  |`,
     ]
-    
+
     for (let i of todo) {
-        let line = ``
-            + `| [${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`
-            + ` | [${i.rule_id}](${i.rule_help_ui})`
-            + ` | ${i.text}`
-            + ` |`
-        lines.push (line)
+        let line = [
+            {
+                label: `[${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`,
+                off: !i.src
+            },
+            {
+                label: `[${i.rule_id}](${i.rule_help_ui})`,
+                off: !i.rule_id
+            },
+            {
+                label: i.text.split ("\n").join ("<br>"),
+            },
+        ].map (i => i.off? '?' : i.label).join (' | ')
+
+        lines.push (`| ${line} |`)
     }
 
     lines.push ("\n\n")
@@ -155,4 +201,10 @@ for (let f of sarif_files) {
 
 let note = to_note (todo)
 
+console.log (note)
+
+if (!CI_MERGE_REQUEST_IID) {
+    console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
+    return
+}
 post2gl (note)
