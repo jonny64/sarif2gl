@@ -39,7 +39,8 @@ const parse = (sarif) => {
     let fix_src = (src) => {
         src = src.replace (`file://`, '')
         src = src.replace (CI_PROJECT_DIR, '')
-        src = src.replace ('/src/', '')
+        src = src.replace (/^\/src\//, '')
+        src = src.replace (/^\/.build\//, '')
         return src
     }
 
@@ -170,7 +171,7 @@ const to_note = (todo) => {
                 off: !i.src
             },
             {
-                label: `[${i.rule_id}](${i.rule_help_ui})`,
+                label: !i.rule_help_ui? i.rule_id : `[${i.rule_id}](${i.rule_help_ui})`,
                 off: !i.rule_id
             },
             {
