@@ -146,6 +146,8 @@ const post2gl = async (note) => {
         return gitlab_rq ({body, url})
     }
 
+    if (d.note.resolved && note == 'OK') return
+
     let url_edit = `${url}/${d.discussion.id}/notes/${d.note.id}`
 
     let body = note == 'OK'? {resolved: 'true'} : {body: note}
