@@ -150,11 +150,14 @@ const post2gl = async (note) => {
 
     let url_edit = `${url}/${d.discussion.id}/notes/${d.note.id}`
 
-    let body = note == 'OK'? {resolved: 'true'} : {body: note}
+    if (note != 'OK') {
+        console.log (`editing note...`)
+        await gitlab_rq ({body: {body: note}, url: url_edit, method: 'PUT'})
+    }
 
-    console.log (`note found, editing...`)
+    let resolved = note == 'OK'? 'true' : 'false'
 
-    return gitlab_rq ({body, url: url_edit, method: 'PUT'})
+    return gitlab_rq ({body: {resolved}, url: url_edit, method: 'PUT'})
 }
 
 const to_note = (todo) => {
