@@ -9,3 +9,4 @@ export CI_MERGE_REQUEST_DIFF_BASE_SHA=
 export CI_PIPELINE_URL="https://some.company.org/namespace/project/-/pipelines/4242"
 node sarif2gl.js semgrep.sarif
 sha512sum sarif2gl.js > sarif2gl.js.sha512
+cat sarif2gl.js.sha512 | sha512sum -c
