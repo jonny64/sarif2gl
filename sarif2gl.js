@@ -41,6 +41,7 @@ const parse = (sarif) => {
         src = src.replace (CI_PROJECT_DIR, '')
         src = src.replace (/^\/src\//, '')
         src = src.replace (/^\/.build\//, '')
+        src = src.replace (/^\/builds\//, '')
         return src
     }
 
