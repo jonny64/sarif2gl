@@ -63,12 +63,19 @@ const parse = (sarif) => {
                 let src = fix_src (artifactLocation.uri)
                 let line = physicalLocation.region.endLine || physicalLocation.region.startLine
                 let rule_id = r.ruleId
-                let rule_help_ui = idx [rule_id].helpUri
+                let rule = idx [rule_id]
+                let rule_help_uri = rule.helpUri
+                let rule_help_text = ''
+                if (rule.help && rule.help.text) {
+                    rule_help_text = rule.help.text
+                    rule_help_text = rule_help_text.split ("\n").join ("<br />")
+                }
                 return {
                     rule_id,
                     src,
                     line,
-                    rule_help_ui,
+                    rule_help_uri,
+                    rule_help_text,
                     text,
                 }
             })
@@ -81,7 +88,7 @@ const parse = (sarif) => {
                     rule_id: '',
                     src: '',
                     line: '',
-                    rule_help_ui: '',
+                    rule_help_uri: '',
                     text: n.message.text,
                 })
             }
@@ -97,7 +104,7 @@ const parse = (sarif) => {
                         rule_id: '',
                         src,
                         line,
-                        rule_help_ui: '',
+                        rule_help_uri: '',
                         text,
                     }
                 })
@@ -170,13 +177,19 @@ const to_note = (todo) => {
     ]
 
     for (let i of todo) {
+
+        let rule_help_markdown = [
+            !i.rule_help_uri? i.rule_id : `[${i.rule_id}](${i.rule_help_uri})`,
+            i.rule_help_text
+        ].filter (i => !!i).join ("<br/>")
+
         let line = [
             {
                 label: `[${i.src}#L${i.line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${i.src}#L${i.line})`,
                 off: !i.src
             },
             {
-                label: !i.rule_help_ui? i.rule_id : `[${i.rule_id}](${i.rule_help_ui})`,
+                label: rule_help_markdown,
                 off: !i.rule_id
             },
             {
