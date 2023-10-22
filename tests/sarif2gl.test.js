@@ -18,4 +18,10 @@ describe('parse', () => {
         const out = load_file('./tests/data/parse.out.eslint.json')
         assert.deepStrictEqual(sarif2gl.parse (inp), out)
     })
+
+    it ('should print tool parse error', (t) => {
+        const inp = load_file('./tests/data/parse.in.eslint.parse-error.sarif')
+        const out = load_file('./tests/data/parse.out.eslint.parse-error.json')
+        assert.deepStrictEqual(sarif2gl.parse (inp), out)
+    })
 })
