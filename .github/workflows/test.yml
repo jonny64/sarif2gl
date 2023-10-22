@@ -39,7 +39,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - run: NODE_V8_COVERAGE=./coverage node --test --experimental-test-coverage
     - run: npx -y c8 report --temp-directory ./coverage --reporter html
-    - run: ls ./coverage
+    - run: chmod 0666 -R ./coverage/*
     - name: Setup Pages
       uses: actions/configure-pages@v3
     - name: Upload artifact
