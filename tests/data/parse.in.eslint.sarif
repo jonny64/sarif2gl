@@ -14,6 +14,16 @@
                 "shortDescription": {
                   "text": "disallow ReDoS vulnerable RegExp literals"
                 }
+              },
+              {
+                "id": "no-undef",
+                "helpUri": "https://eslint.org/docs/rules/no-undef",
+                "properties": {
+                  "category": "Variables"
+                },
+                "shortDescription": {
+                  "text": "disallow the use of undeclared variables unless mentioned in `/*global */` comments"
+                }
               }
             ],
             "version": "8.39.0"
@@ -29,7 +39,7 @@
               {
                 "physicalLocation": {
                   "artifactLocation": {
-                    "uri": "https://gitlab.company.ru/group/proj/-/tree/master/back/lib/Content/tb_barracks.js",
+                    "uri": "file:///builds/group/proj/back/lib/Content/reports.js",
                     "index": 0
                   },
                   "region": {
@@ -42,6 +52,30 @@
               }
             ],
             "ruleId": "redos/no-vulnerable",
+            "ruleIndex": 0
+          },
+          {
+            "level": "warning",
+            "message": {
+              "text": "'HTTP' is not defined."
+            },
+            "locations": [
+              {
+                "physicalLocation": {
+                  "artifactLocation": {
+                    "uri": "file:///builds/group/proj/back/lib/Content/reports.js",
+                    "index": 0
+                  },
+                  "region": {
+                    "startLine": 4189,
+                    "startColumn": 26,
+                    "endLine": 4189,
+                    "endColumn": 30
+                  }
+                }
+              }
+            ],
+            "ruleId": "no-undef",
             "ruleIndex": 0
           }
         ]

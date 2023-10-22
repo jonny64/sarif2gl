@@ -4,7 +4,15 @@
         "rule_help_text": "",
         "rule_help_uri": "",
         "rule_id": "redos/no-vulnerable",
-        "src": "https://gitlab.company.ru/group/proj/-/tree/master/back/lib/Content/tb_barracks.js",
+        "src": "group/proj/back/lib/Content/reports.js",
         "text": "Found a ReDoS vulnerable RegExp (2nd degree polynomial)."
+    },
+    {
+        "line": 4189,
+        "rule_help_text": "",
+        "rule_help_uri": "https://eslint.org/docs/rules/no-undef",
+        "rule_id": "no-undef",
+        "src": "group/proj/back/lib/Content/reports.js",
+        "text": "'HTTP' is not defined."
     }
 ]
