@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -39,6 +39,10 @@ jobs:
         key: 'coverage'
 
   publish-coverage:
+    needs: test
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
