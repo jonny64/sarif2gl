@@ -43,15 +43,13 @@ jobs:
         chmod -c -R +rX "coverage/" | while read line; do
           echo "::warning title=Invalid file permissions automatically fixed::$line"
         done
+    - run: 'rm ./coverage/*.json'
     - name: Setup Pages
       uses: actions/configure-pages@v3
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v2
       with:
-        path: |
-          ./coverage/*.html
-          ./coverage/*.js
-          ./coverage/*.css
+        path: './coverage'
     - name: Deploy to GitHub Pages
       id: deployment
       uses: actions/deploy-pages@v2
