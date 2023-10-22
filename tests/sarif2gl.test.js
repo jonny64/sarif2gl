@@ -5,7 +5,7 @@ const sarif2gl = require ('../sarif2gl')
 
 const darn = o => { console.warn(o); return o }
 
-const load_file = p => JSON.parse (darn(fs.readFileSync (darn (p), 'utf8')))
+const load_file = p => JSON.parse (fs.readFileSync (p, 'utf8'))
 
 describe('parse', () => {
 

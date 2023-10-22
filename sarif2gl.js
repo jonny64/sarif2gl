@@ -1,4 +1,3 @@
-// fetch: node 18+
 const fs = require ('fs')
 
 const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_DIR, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
@@ -229,7 +228,9 @@ module.exports = {
 }
 
 if (!CI_MERGE_REQUEST_IID) {
-    console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
+    if (!process.env.NODE_TEST_CONTEXT) {
+        console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
+    }
     return
 }
 
