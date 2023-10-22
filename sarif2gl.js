@@ -65,7 +65,7 @@ const parse = (sarif) => {
                 let line = physicalLocation.region.endLine || physicalLocation.region.startLine
                 let rule_id = r.ruleId
                 let rule = idx [rule_id]
-                let rule_help_uri = rule.helpUri
+                let rule_help_uri = rule.helpUri || ''
                 let rule_help_text = ''
                 if (rule.help && rule.help.text) {
                     rule_help_text = rule.help.text
@@ -223,8 +223,14 @@ let note = to_note (todo)
 
 console.log (note)
 
+
+module.exports = {
+    parse,
+}
+
 if (!CI_MERGE_REQUEST_IID) {
     console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
     return
 }
+
 post2gl (note)

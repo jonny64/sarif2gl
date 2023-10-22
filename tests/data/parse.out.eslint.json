@@ -1,0 +1,10 @@
+[
+    {
+        "line": 587,
+        "rule_help_text": "",
+        "rule_help_uri": "",
+        "rule_id": "redos/no-vulnerable",
+        "src": "https://gitlab.company.ru/group/proj/-/tree/master/back/lib/Content/tb_barracks.js",
+        "text": "Found a ReDoS vulnerable RegExp (2nd degree polynomial)."
+    }
+]
