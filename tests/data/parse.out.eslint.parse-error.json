@@ -1,0 +1,9 @@
+[
+    {
+        "line": 1168,
+        "rule_help_uri": "",
+        "rule_id": "",
+        "src": "proj/front/root/_/libs/some_ui/draw_table.js",
+        "text": "Parsing error: Unexpected token ."
+    }
+]
