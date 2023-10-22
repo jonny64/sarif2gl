@@ -30,12 +30,12 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: node --test --experimental-test-coverage
     - run: NODE_V8_COVERAGE=./coverage node --test --experimental-test-coverage
-    - run: npx c8 report --temp-directory ./coverage --reporter html
-    - uses: actions/cache@v3
+    - run: npx -y c8 report --temp-directory ./coverage --reporter html
+    - run: ls ./coverage
+    - uses: actions/cache/save@v3
       with:
-        path: './coverage'
+        path: './coverage/*.html'
         key: 'coverage'
 
   publish-coverage:
