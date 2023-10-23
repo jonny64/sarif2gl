@@ -35,6 +35,8 @@ jobs:
 
   cov:
     runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/master'
     permissions:
       pages: write
       id-token: write
