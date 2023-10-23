@@ -96,7 +96,7 @@ const parse = (sarif) => {
             }
             for (let n of i.toolConfigurationNotifications || []) {
                 let text = n.message.text
-                console.log ({n})
+
                 let todo = (n.locations || []).map (loc => {
                     let {physicalLocation} = loc
                     let {artifactLocation} = physicalLocation
@@ -120,14 +120,14 @@ const parse = (sarif) => {
 
 const parse_diff = async (rp) => {
 
-    let idx = {}
+    let seen = {}
 
     for (let i of rp.changes || []) {
         if (i.deleted_file) continue
-        idx [i.new_path] = i
+        seen [i.new_path] = 1
     }
 
-    return {}
+    return seen
 }
 
 const find_note = (discussions, sign) => {
@@ -165,14 +165,14 @@ const main = async () => {
 
     let diffs = await gitlab_rq ({body: '', url_diff, method: 'GET'})
 
-    let idx = await parse_diff (diffs)
+    let seen = await parse_diff (diffs)
 
-    todo = todo.filter (t => idx [t.src])
+    todo = todo.filter (t => seen [t.src])
 
 
     let note = to_note (todo)
 
-    console.log (note)
+    console.log (`note: ${note}`)
 
 
     let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`

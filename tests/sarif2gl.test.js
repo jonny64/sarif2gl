@@ -27,9 +27,9 @@ describe('parse', () => {
 })
 
 
-describe('filter_findings', async () => {
+describe('filter findings', async () => {
 
-    it ('should load MR diff', async (t) => {
+    it ('should skip deleted files', async (t) => {
         const inp_rp = load_file('./tests/data/rp.gitlab.merge_requests.42.changes.json')
 
         const inp = await sarif2gl.parse_diff (inp_rp)

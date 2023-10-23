@@ -13,8 +13,8 @@
             "diff": "@@ -24,6 +24,8 @@\n     \"feature\": false,\n     \"Path\": \"/var/feature\"\n   \n"
         },
         {
-            "old_path": "back/conf/old.conf.template",
-            "new_path": "",
+            "old_path": "",
+            "new_path": "back/conf/new.conf.template",
             "a_mode": "0",
             "b_mode": "100644",
             "new_file": true,
