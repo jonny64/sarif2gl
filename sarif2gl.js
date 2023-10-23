@@ -118,6 +118,18 @@ const parse = (sarif) => {
     return result
 }
 
+const parse_diff = async (rp) => {
+
+    let idx = {}
+
+    for (let i of rp.changes || []) {
+        if (i.deleted_file) continue
+        idx [i.new_path] = i
+    }
+
+    return {}
+}
+
 const find_note = (discussions, sign) => {
 
     for (let discussion of discussions || []) {
@@ -134,7 +146,34 @@ const find_note = (discussions, sign) => {
     return {}
 }
 
-const post2gl = async (note) => {
+const main = async () => {
+
+    let todo = []
+
+    for (let f of sarif_files) {
+
+        let s = JSON.parse (fs.readFileSync (f, 'utf8'))
+
+        let t = parse (s)
+
+        todo = todo.concat (t)
+
+    }
+
+
+    let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
+
+    let diffs = await gitlab_rq ({body: '', url_diff, method: 'GET'})
+
+    let idx = await parse_diff (diffs)
+
+    todo = todo.filter (t => idx [t.src])
+
+
+    let note = to_note (todo)
+
+    console.log (note)
+
 
     let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
 
@@ -208,25 +247,9 @@ const to_note = (todo) => {
     return lines.join ("\n")
 }
 
-let todo = []
-
-for (let f of sarif_files) {
-
-    let s = JSON.parse (fs.readFileSync (f, 'utf8'))
-
-    let t = parse (s)
-
-    todo = todo.concat (t)
-
-}
-
-let note = to_note (todo)
-
-console.log (note)
-
-
 module.exports = {
     parse,
+    parse_diff,
 }
 
 if (!CI_MERGE_REQUEST_IID) {
@@ -236,4 +259,4 @@ if (!CI_MERGE_REQUEST_IID) {
     return
 }
 
-post2gl (note)
+main ()

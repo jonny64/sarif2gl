@@ -25,3 +25,17 @@ describe('parse', () => {
         assert.deepStrictEqual(sarif2gl.parse (inp), out)
     })
 })
+
+
+describe('filter_findings', async () => {
+
+    it ('should load MR diff', async (t) => {
+        const inp_rp = load_file('./tests/data/rp.gitlab.merge_requests.42.changes.json')
+
+        const inp = await sarif2gl.parse_diff (inp_rp)
+        const out = load_file('./tests/data/rp.gitlab.merge_requests.42.changes.parsed.json')
+
+        assert.deepStrictEqual(inp, out)
+    })
+
+})
