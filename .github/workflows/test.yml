@@ -31,7 +31,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
           name: cov_data
-          path: coverage/*.json
+          path: coverage/*
 
   cov:
     runs-on: ubuntu-latest
