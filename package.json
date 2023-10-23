@@ -1,0 +1,30 @@
+{
+  "name": "sarif2gl",
+  "version": "1.0.0",
+  "description": "deliver SAST results to gitlab merge request discussions",
+  "main": "sarif2gl.js",
+  "directories": {
+    "test": "tests"
+  },
+  "bin": {
+    "sarif2gl": "sarif2gl.js"
+  },
+  "scripts": {
+    "test": "node --test --experimental-test-coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jonny64/sarif2gl.git"
+  },
+  "keywords": [
+    "sast",
+    "sarif",
+    "gitlab"
+  ],
+  "author": "jonny64",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jonny64/sarif2gl/issues"
+  },
+  "homepage": "https://github.com/jonny64/sarif2gl#readme"
+}
