@@ -43,6 +43,7 @@ const parse = (sarif) => {
         src = src.replace (/^\/src\//, '')
         src = src.replace (/^\/.build\//, '')
         src = src.replace (/^\/builds\//, '')
+        src = src.replace (/^\//, '')
         return src
     }
 
@@ -96,7 +97,7 @@ const parse = (sarif) => {
             }
             for (let n of i.toolConfigurationNotifications || []) {
                 let text = n.message.text
-                console.log ({n})
+
                 let todo = (n.locations || []).map (loc => {
                     let {physicalLocation} = loc
                     let {artifactLocation} = physicalLocation
@@ -118,6 +119,20 @@ const parse = (sarif) => {
     return result
 }
 
+const parse_diff = async (rp) => {
+
+    let seen = {}
+
+    for (let i of rp.changes || []) {
+        if (i.deleted_file || !i.new_path) continue
+        seen [i.new_path] = 1
+    }
+
+    console.log (`seen = ${JSON.stringify(seen)}`)
+
+    return seen
+}
+
 const find_note = (discussions, sign) => {
 
     for (let discussion of discussions || []) {
@@ -134,7 +149,36 @@ const find_note = (discussions, sign) => {
     return {}
 }
 
-const post2gl = async (note) => {
+const main = async () => {
+
+    let todo = []
+
+    for (let f of sarif_files) {
+
+        let s = JSON.parse (fs.readFileSync (f, 'utf8'))
+
+        let t = parse (s)
+
+        todo = todo.concat (t)
+
+    }
+
+
+    let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
+
+    let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
+
+    let seen = await parse_diff (diffs)
+    
+    console.log (`todo = ${JSON.stringify(todo)}`)
+
+    todo = todo.filter (t => seen [t.src])
+
+
+    let note = to_note (todo)
+
+    console.log (`note: ${note}`)
+
 
     let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
 
@@ -208,25 +252,9 @@ const to_note = (todo) => {
     return lines.join ("\n")
 }
 
-let todo = []
-
-for (let f of sarif_files) {
-
-    let s = JSON.parse (fs.readFileSync (f, 'utf8'))
-
-    let t = parse (s)
-
-    todo = todo.concat (t)
-
-}
-
-let note = to_note (todo)
-
-console.log (note)
-
-
 module.exports = {
     parse,
+    parse_diff,
 }
 
 if (!CI_MERGE_REQUEST_IID) {
@@ -236,4 +264,4 @@ if (!CI_MERGE_REQUEST_IID) {
     return
 }
 
-post2gl (note)
+main ()
