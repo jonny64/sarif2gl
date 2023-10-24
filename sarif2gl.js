@@ -163,7 +163,7 @@ const main = async () => {
 
     let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
 
-    let diffs = await gitlab_rq ({body: '', url_diff, method: 'GET'})
+    let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
 
     let seen = await parse_diff (diffs)
 
