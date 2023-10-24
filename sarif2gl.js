@@ -123,9 +123,11 @@ const parse_diff = async (rp) => {
     let seen = {}
 
     for (let i of rp.changes || []) {
-        if (i.deleted_file) continue
+        if (i.deleted_file || !i.new_path) continue
         seen [i.new_path] = 1
     }
+
+    console.log (`seen = ${JSON.stringify(seen)}`)
 
     return seen
 }
@@ -166,6 +168,8 @@ const main = async () => {
     let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
 
     let seen = await parse_diff (diffs)
+    
+    console.log (`todo = ${JSON.stringify(todo)}`)
 
     todo = todo.filter (t => seen [t.src])
 
