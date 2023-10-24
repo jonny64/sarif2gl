@@ -43,6 +43,7 @@ const parse = (sarif) => {
         src = src.replace (/^\/src\//, '')
         src = src.replace (/^\/.build\//, '')
         src = src.replace (/^\/builds\//, '')
+        src = src.replace (/^\//, '')
         return src
     }
 
