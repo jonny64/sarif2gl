@@ -2,7 +2,16 @@
 
 const fs = require ('fs')
 
-const {SDL_BOT_TOKEN, CI_SERVER_URL, CI_PROJECT_DIR, CI_PROJECT_PATH, CI_COMMIT_SHA, CI_MERGE_REQUEST_PROJECT_URL, CI_MERGE_REQUEST_IID, CI_PIPELINE_URL} = process.env
+const {SDL_BOT_TOKEN
+    , CI_SERVER_URL
+    , CI_PROJECT_DIR
+    , CI_PROJECT_PATH
+    , CI_COMMIT_SHA
+    , CI_MERGE_REQUEST_PROJECT_URL
+    , CI_MERGE_REQUEST_IID
+    , CI_PIPELINE_URL
+    , SARIF2GL_SKIP_UNCHANGED
+} = process.env
 const [_, __, ...sarif_files] = process.argv
 const SARIF2GL_NOTE_SIGN = 'sarif2gl'
 
@@ -163,16 +172,17 @@ const main = async () => {
 
     }
 
+    if (SARIF2GL_SKIP_UNCHANGED) {
+        let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
 
-    let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
+        let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
 
-    let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
+        let seen = await parse_diff (diffs)
 
-    let seen = await parse_diff (diffs)
-    
-    console.log (`todo = ${JSON.stringify(todo)}`)
+        console.log (`todo = ${JSON.stringify(todo)}`)
 
-    todo = todo.filter (t => seen [t.src])
+        todo = todo.filter (t => seen [t.src])
+    }
 
 
     let note = to_note (todo)
