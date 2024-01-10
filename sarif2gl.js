@@ -190,9 +190,9 @@ const main = async () => {
     console.log (`note: ${note}`)
 
 
-    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions?per_page=1000`
+    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
 
-    let discussions = await gitlab_rq ({body: '', url, method: 'GET'})
+    let discussions = await gitlab_rq ({body: '', url: url + '?per_page=1000', method: 'GET'})
 
     let d = find_note (discussions, SARIF2GL_NOTE_SIGN)
 
