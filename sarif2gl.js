@@ -232,6 +232,8 @@ const to_note = (todo) => {
         `| --- | ---  | ---  |`,
     ]
 
+    let fix_markdown = s => s.split ("\n").join ("<br/>").split ("\\n").join ("<br/>")
+
     for (let i of todo) {
 
         let rule_help_markdown = [
@@ -245,11 +247,11 @@ const to_note = (todo) => {
                 off: !i.src
             },
             {
-                label: rule_help_markdown,
+                label: fix_markdown (rule_help_markdown),
                 off: !i.rule_id
             },
             {
-                label: i.text.split ("\n").join ("<br>"),
+                label: fix_markdown (i.text),
             },
         ].map (i => i.off? '?' : i.label).join (' | ')
 
@@ -269,6 +271,7 @@ module.exports = {
 
 if (!CI_MERGE_REQUEST_IID) {
     if (!process.env.NODE_TEST_CONTEXT) {
+        main ()
         console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
     }
     return
