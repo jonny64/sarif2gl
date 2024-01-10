@@ -190,7 +190,7 @@ const main = async () => {
     console.log (`note: ${note}`)
 
 
-    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
+    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions?per_page=1000`
 
     let discussions = await gitlab_rq ({body: '', url, method: 'GET'})
 
