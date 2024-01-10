@@ -16,14 +16,15 @@ const [_, __, ...sarif_files] = process.argv
 const SARIF2GL_NOTE_SIGN = 'sarif2gl'
 
 const gitlab_rq = async  (o) => {
+    const {env} = o
     const headers = {
-        'Authorization' : `Bearer ${SDL_BOT_TOKEN}`,
+        'Authorization' : `Bearer ${env.SDL_BOT_TOKEN}`,
         'Content-Type' : 'application/json'
     }
 
-    const project_path = 'projects/' + CI_PROJECT_PATH.split ('/').join ('%2F')
+    const project_path = 'projects/' + env.CI_PROJECT_PATH.split ('/').join ('%2F')
 
-    let url = `${CI_SERVER_URL}/api/v4/${project_path}/${o.url}`
+    let url = `${env.CI_SERVER_URL}/api/v4/${project_path}/${o.url}`
 
     const options = {headers, method: o.method || 'POST'}
 
@@ -158,7 +159,9 @@ const find_note = (discussions, sign) => {
     return {}
 }
 
-const main = async () => {
+const main = async (o) => {
+
+    const {env} = o
 
     let todo = []
 
@@ -173,9 +176,9 @@ const main = async () => {
     }
 
     if (SARIF2GL_SKIP_UNCHANGED) {
-        let url_diff = `merge_requests/${CI_MERGE_REQUEST_IID}/changes`
+        let url_diff = `merge_requests/${env.CI_MERGE_REQUEST_IID}/changes`
 
-        let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET'})
+        let diffs = await gitlab_rq ({body: '', url: url_diff, method: 'GET', ...o})
 
         let seen = await parse_diff (diffs)
 
@@ -185,14 +188,17 @@ const main = async () => {
     }
 
 
-    let note = to_note (todo)
+    let note = module.exports.to_note (todo)
 
     console.log (`note: ${note}`)
+    if (!env) {
+        console.log (`no env, exiting...`)
+        return
+    }
 
+    let url = `merge_requests/${env.CI_MERGE_REQUEST_IID}/discussions`
 
-    let url = `merge_requests/${CI_MERGE_REQUEST_IID}/discussions`
-
-    let discussions = await gitlab_rq ({body: '', url: url + '?per_page=1000', method: 'GET'})
+    let discussions = await gitlab_rq ({body: '', url: url + '?per_page=1000', method: 'GET', ...o})
 
     let d = find_note (discussions, SARIF2GL_NOTE_SIGN)
 
@@ -206,7 +212,7 @@ const main = async () => {
 
         console.log (`no note found, creating new...`)
 
-        return gitlab_rq ({body, url})
+        return gitlab_rq ({body, url, ...o})
     }
 
     if (d.note.resolved && note == 'OK') return
@@ -215,12 +221,12 @@ const main = async () => {
 
     if (note != 'OK') {
         console.log (`editing note...`)
-        await gitlab_rq ({body: {body: note}, url: url_edit, method: 'PUT'})
+        await gitlab_rq ({body: {body: note}, url: url_edit, method: 'PUT', ...o})
     }
 
     let resolved = note == 'OK'? 'true' : 'false'
 
-    return gitlab_rq ({body: {resolved}, url: url_edit, method: 'PUT'})
+    return gitlab_rq ({body: {resolved}, url: url_edit, method: 'PUT', ...o})
 }
 
 const to_note = (todo) => {
@@ -267,14 +273,15 @@ const to_note = (todo) => {
 module.exports = {
     parse,
     parse_diff,
+    to_note,
+    main,
 }
 
 if (!CI_MERGE_REQUEST_IID) {
     if (!process.env.NODE_TEST_CONTEXT) {
-        main ()
-        console.log (`no CI_MERGE_REQUEST_IID env, exiting...`)
+        main ({env: process.env})
     }
     return
 }
 
-main ()
+main ({env: process.env})
