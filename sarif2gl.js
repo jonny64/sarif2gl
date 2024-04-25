@@ -11,6 +11,7 @@ const {SDL_BOT_TOKEN
     , CI_MERGE_REQUEST_IID
     , CI_PIPELINE_URL
     , SARIF2GL_SKIP_UNCHANGED
+    , SARIF2GL_REMOVE_URI_PART
 } = process.env
 const [_, __, ...sarif_files] = process.argv
 const SARIF2GL_NOTE_SIGN = 'sarif2gl'
@@ -50,7 +51,7 @@ const parse = (sarif) => {
     let fix_src = (src) => {
         src = src.replace (`file://`, '')
         src = src.replace (CI_PROJECT_DIR, '')
-        src = src.replace (/^\/src\//, '')
+        src = src.replace (SARIF2GL_REMOVE_URI_PART, '')
         src = src.replace (/^\/.build\//, '')
         src = src.replace (/^\/builds\//, '')
         src = src.replace (/^\//, '')
