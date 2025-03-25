@@ -1,0 +1,9 @@
+[
+    {
+        "line": 1,
+        "rule_help_uri": "",
+        "rule_id": "",
+        "src": "some.js",
+        "text": "File ignored because of a matching ignore pattern. Use \"--no-ignore\" to override."
+    }
+]

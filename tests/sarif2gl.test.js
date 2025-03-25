@@ -24,6 +24,12 @@ describe('parse', () => {
         const out = load_file('./tests/data/parse.out.eslint.parse-error.json')
         assert.deepStrictEqual(sarif2gl.parse (inp), out)
     })
+
+    it ('should print tool notification without endLine', (t) => {
+        const inp = load_file('./tests/data/parse.in.eslint.ESL0999.sarif')
+        const out = load_file('./tests/data/parse.out.eslint.ESL0999.json')
+        assert.deepStrictEqual(sarif2gl.parse (inp), out)
+    })
 })
 
 
