@@ -28,7 +28,7 @@ jobs:
         done
     - run: 'rm ./coverage/*.json'
     - name: upload cov report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
           name: cov_data
           path: coverage/*
