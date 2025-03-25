@@ -113,7 +113,7 @@ const parse = (sarif) => {
                     let {physicalLocation} = loc
                     let {artifactLocation} = physicalLocation
                     let src = fix_src (artifactLocation.uri)
-                    let line = physicalLocation.region.endLine || physicalLocation.region.startLine
+                    let line = physicalLocation?.region?.endLine || physicalLocation?.region?.startLine || 1
                     return {
                         rule_id: '',
                         src,
