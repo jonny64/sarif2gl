@@ -47,6 +47,25 @@ describe('filter findings', async () => {
 })
 
 
+describe('markdown', () => {
+
+    it ('should handle markdown items in todo', (t) => {
+        process.env.CI_PIPELINE_URL = 'https://gitlab.company/test/test/pipelines/1'
+        const todo = [
+            {type: 'md', label: '# Test Report'}
+        ]
+        const result = sarif2gl.to_note (todo)
+        assert.ok(result.includes('# Test Report'))
+        assert.ok(result.includes('reported by'))
+    })
+
+    it ('should return OK for empty todo', (t) => {
+        const result = sarif2gl.to_note ([])
+        assert.strictEqual(result, 'OK')
+    })
+})
+
+
 describe('api', async () => {
 
     const env = {
