@@ -164,6 +164,12 @@ const main = async (o) => {
 
     const {env} = o
 
+    const required_env = ['SDL_BOT_TOKEN', 'CI_SERVER_URL', 'CI_PROJECT_PATH']
+    const missing_env = required_env.filter(v => !env[v])
+    if (missing_env.length) {
+        throw new Error(`missing required env vars: ${missing_env.join(', ')}`)
+    }
+
     let md_files = files.filter (f => f.endsWith ('.md'))
     let sarif_files = files.filter (f => !f.endsWith ('.md'))
 
@@ -208,6 +214,10 @@ const main = async (o) => {
     let url = `merge_requests/${env.CI_MERGE_REQUEST_IID}/discussions`
 
     let discussions = await gitlab_rq ({body: '', url: url + '?per_page=1000', method: 'GET', ...o})
+
+    if (!Array.isArray(discussions)) {
+        throw new Error(`gitlab api error: ${JSON.stringify(discussions)}`)
+    }
 
     let d = find_note (discussions, SARIF2GL_NOTE_SIGN)
 
@@ -309,11 +319,13 @@ module.exports = {
     main,
 }
 
-if (!CI_MERGE_REQUEST_IID) {
-    if (!process.env.NODE_TEST_CONTEXT) {
-        main ({env: process.env})
-    }
-    return
+if (CI_MERGE_REQUEST_IID || !process.env.NODE_TEST_CONTEXT) {
+    (async () => {
+        try {
+            await main({env: process.env})
+        } catch (e) {
+            console.log(e.message)
+            process.exitCode = 1
+        }
+    })()
 }
-
-main ({env: process.env})
