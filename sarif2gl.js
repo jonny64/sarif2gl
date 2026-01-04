@@ -44,19 +44,41 @@ const gitlab_rq = async  (o) => {
     return rp
 }
 
+const fix_src = (src) => {
+    src = src.replace (`file://`, '')
+    src = src.replace (CI_PROJECT_DIR, '')
+    src = src.replace (SARIF2GL_REMOVE_URI_PART, '')
+    src = src.replace (/^\/.build\//, '')
+    src = src.replace (/^\/builds\//, '')
+    src = src.replace (/^\//, '')
+    return src
+}
+
+const to_codeflow_text = (codeFlows) => {
+    if (!codeFlows || !codeFlows.length) return ''
+    let steps = []
+    for (let cf of codeFlows) {
+        for (let tf of cf.threadFlows || []) {
+            for (let loc of tf.locations || []) {
+                let pl = loc.location?.physicalLocation
+                if (!pl) continue
+                let src = fix_src(pl.artifactLocation?.uri || '')
+                let line = pl.region?.startLine || pl.region?.endLine || '?'
+                let snippet = (pl.region?.snippet?.text || '').trim()
+                let link = CI_MERGE_REQUEST_PROJECT_URL
+                    ? `[${src}#L${line}](${CI_MERGE_REQUEST_PROJECT_URL}/-/blob/${CI_COMMIT_SHA}/${src}#L${line})`
+                    : `${src}#L${line}`
+                steps.push(link + (snippet ? ` ${snippet}` : ''))
+            }
+        }
+    }
+    if (!steps.length) return ''
+    return '\n\ncodeflow:\n' + steps.join('\n-> ')
+}
+
 const parse = (sarif) => {
 
     let result = []
-
-    let fix_src = (src) => {
-        src = src.replace (`file://`, '')
-        src = src.replace (CI_PROJECT_DIR, '')
-        src = src.replace (SARIF2GL_REMOVE_URI_PART, '')
-        src = src.replace (/^\/.build\//, '')
-        src = src.replace (/^\/builds\//, '')
-        src = src.replace (/^\//, '')
-        return src
-    }
 
     for (let rr of sarif.runs) {
 
@@ -71,6 +93,7 @@ const parse = (sarif) => {
         for (let r of rr.results) {
             if (r.suppressions) continue
             let text = r.message.text
+            let codeflow_text = to_codeflow_text(r.codeFlows)
             let todo = r.locations.map (loc => {
                 let {physicalLocation} = loc
                 let {artifactLocation} = physicalLocation
@@ -90,7 +113,7 @@ const parse = (sarif) => {
                     line,
                     rule_help_uri,
                     rule_help_text,
-                    text,
+                    text: text + codeflow_text,
                 }
             })
             result = result.concat (todo)
