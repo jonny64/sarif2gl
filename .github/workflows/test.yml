@@ -33,32 +33,3 @@ jobs:
       with:
           name: cov_data
           path: coverage/*
-
-  cov:
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/master'
-    permissions:
-      pages: write
-      id-token: write
-      contents: read
-    concurrency:
-      group: "pages"
-      cancel-in-progress: true
-    environment:
-      name: github-pages
-      url: ${{ steps.cov.outputs.page_url }}
-    steps:
-    - name: dl cov report
-      uses: actions/download-artifact@v7
-      with:
-        name: cov_data
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v4
-      with:
-        path: './'
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
