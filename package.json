@@ -10,7 +10,8 @@
     "sarif2gl": "sarif2gl.js"
   },
   "scripts": {
-    "test": "node --test --experimental-test-coverage"
+    "test": "node --test --experimental-test-coverage",
+    "semgrep": "docker run --rm -v ${PWD}:/src -e SEMGREP_APP_TOKEN=secret semgrep/semgrep:1.141.0 semgrep --dataflow-traces --sarif ."
   },
   "repository": {
     "type": "git",

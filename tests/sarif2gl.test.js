@@ -30,6 +30,12 @@ describe('parse', () => {
         const out = load_file('./tests/data/parse.out.eslint.ESL0999.json')
         assert.deepStrictEqual(sarif2gl.parse (inp), out)
     })
+
+    it ('should parse codeFlows from semgrep', (t) => {
+        const inp = load_file('./tests/data/parse.in.semgrep.codeflows.sarif')
+        const out = load_file('./tests/data/parse.out.semgrep.codeflows.json')
+        assert.deepStrictEqual(sarif2gl.parse(inp), out)
+    })
 })
 
 
