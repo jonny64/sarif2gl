@@ -47,13 +47,53 @@ describe('filter findings', async () => {
 })
 
 
+describe('markdown', () => {
+
+    it ('should handle markdown items in todo', (t) => {
+        process.env.CI_PIPELINE_URL = 'https://gitlab.company/test/test/pipelines/1'
+        const todo = [
+            {type: 'md', label: '# Test Report'}
+        ]
+        const result = sarif2gl.to_note (todo)
+        assert.ok(result.includes('# Test Report'))
+        assert.ok(result.includes('reported by'))
+    })
+
+    it ('should return OK for empty todo', (t) => {
+        const result = sarif2gl.to_note ([])
+        assert.strictEqual(result, 'OK')
+    })
+})
+
+
 describe('api', async () => {
 
     const env = {
+        SDL_BOT_TOKEN: 'test-token',
         CI_MERGE_REQUEST_IID: 42,
         CI_SERVER_URL: 'https://gitlab.company',
         CI_PROJECT_PATH: 'test/test'
     }
+
+    it ('should throw on missing env var', async () => {
+        const {SDL_BOT_TOKEN, ...env_no_token} = env
+        await assert.rejects(
+            sarif2gl.main({env: env_no_token}),
+            {message: /missing required env vars:.*SDL_BOT_TOKEN/}
+        )
+    })
+
+    it ('should throw on invalid discussions response', async () => {
+        global.fetch = mock.fn(() => Promise.resolve({
+            json: () => Promise.resolve({message: '401 Unauthorized'})
+        }))
+        sarif2gl.to_note = mock.fn(() => 'sarif2gl note text')
+
+        await assert.rejects(
+            sarif2gl.main({env}),
+            {message: /gitlab api error:.*401 Unauthorized/}
+        )
+    })
 
     it ('should create new note if none exists', async () => {
 

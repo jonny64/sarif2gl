@@ -13,7 +13,7 @@ const {SDL_BOT_TOKEN
     , SARIF2GL_SKIP_UNCHANGED
     , SARIF2GL_REMOVE_URI_PART
 } = process.env
-const [_, __, ...sarif_files] = process.argv
+const [_, __, ...files] = process.argv
 const SARIF2GL_NOTE_SIGN = 'sarif2gl'
 
 const gitlab_rq = async  (o) => {
@@ -164,6 +164,15 @@ const main = async (o) => {
 
     const {env} = o
 
+    const required_env = ['SDL_BOT_TOKEN', 'CI_SERVER_URL', 'CI_PROJECT_PATH']
+    const missing_env = required_env.filter(v => !env[v])
+    if (missing_env.length) {
+        throw new Error(`missing required env vars: ${missing_env.join(', ')}`)
+    }
+
+    let md_files = files.filter (f => f.endsWith ('.md'))
+    let sarif_files = files.filter (f => !f.endsWith ('.md'))
+
     let todo = []
 
     for (let f of sarif_files) {
@@ -174,6 +183,11 @@ const main = async (o) => {
 
         todo = todo.concat (t)
 
+    }
+
+    for (let f of md_files) {
+        let md = fs.readFileSync (f, 'utf8')
+        todo.push ({type: 'md', label: md})
     }
 
     if (SARIF2GL_SKIP_UNCHANGED) {
@@ -200,6 +214,10 @@ const main = async (o) => {
     let url = `merge_requests/${env.CI_MERGE_REQUEST_IID}/discussions`
 
     let discussions = await gitlab_rq ({body: '', url: url + '?per_page=1000', method: 'GET', ...o})
+
+    if (!Array.isArray(discussions)) {
+        throw new Error(`gitlab api error: ${JSON.stringify(discussions)}`)
+    }
 
     let d = find_note (discussions, SARIF2GL_NOTE_SIGN)
 
@@ -230,9 +248,9 @@ const main = async (o) => {
     return gitlab_rq ({body: {resolved}, url: url_edit, method: 'PUT', ...o})
 }
 
-const to_note = (todo) => {
+const to_md = (findings) => {
 
-    if (!todo.length) return 'OK'
+    if (!findings.length) return ''
 
     let lines = [
         `| src | rule | desc |`,
@@ -241,7 +259,7 @@ const to_note = (todo) => {
 
     let fix_markdown = s => s.split ("\n").join ("<br/>").split ("\\n").join ("<br/>")
 
-    for (let i of todo) {
+    for (let i of findings) {
 
         let rule_help_markdown = [
             !i.rule_help_uri? i.rule_id : `[${i.rule_id}](${i.rule_help_uri})`,
@@ -265,7 +283,29 @@ const to_note = (todo) => {
         lines.push (`| ${line} |`)
     }
 
-    lines.push ("\n\n")
+    return lines.join ("\n")
+}
+
+const to_note = (todo) => {
+
+    if (!todo.length) return 'OK'
+
+    let findings = todo.filter (i => i.type != 'md')
+    let md = todo.filter (i => i.type == 'md').map (i => i.label).join ("\n\n")
+
+    let lines = []
+
+    let sarif_table = to_md (findings)
+    if (sarif_table) {
+        lines.push (sarif_table)
+        lines.push ("\n\n")
+    }
+
+    if (md) {
+        lines.push (md)
+        lines.push ("\n\n")
+    }
+
     lines.push (`reported by [${SARIF2GL_NOTE_SIGN}](${CI_PIPELINE_URL})  \n`)
 
     return lines.join ("\n")
@@ -274,15 +314,18 @@ const to_note = (todo) => {
 module.exports = {
     parse,
     parse_diff,
+    to_md,
     to_note,
     main,
 }
 
-if (!CI_MERGE_REQUEST_IID) {
-    if (!process.env.NODE_TEST_CONTEXT) {
-        main ({env: process.env})
-    }
-    return
+if (CI_MERGE_REQUEST_IID || !process.env.NODE_TEST_CONTEXT) {
+    (async () => {
+        try {
+            await main({env: process.env})
+        } catch (e) {
+            console.log(e.message)
+            process.exitCode = 1
+        }
+    })()
 }
-
-main ({env: process.env})
