@@ -1,0 +1,10 @@
+[
+  {
+    "rule_id": "rules.select_hash",
+    "src": "tmp/complex_flow.js",
+    "line": 23,
+    "rule_help_uri": "https://gitlab.cheby.ru/sdl/semgrep/-/wikis/tests.semgrep.javascript.dia.rq.sql_injection.select_hash",
+    "rule_help_text": "this.rq.$X injected in sql without sanitizing!",
+    "text": "this.rq.ids injected in sql without sanitizing!\n\ncodeflow:\ntmp/complex_flow.js#L5 rq.ids\n-> tmp/complex_flow.js#L5 userInput\n-> tmp/complex_flow.js#L8 step2\n-> tmp/complex_flow.js#L11 step3\n-> tmp/complex_flow.js#L14 step4\n-> tmp/complex_flow.js#L17 step5\n-> tmp/complex_flow.js#L20 `\n-> tmp/complex_flow.js#L20 query\n-> tmp/complex_flow.js#L23 return db.select_all(query, [])"
+  }
+]
