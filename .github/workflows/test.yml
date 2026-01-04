@@ -21,15 +21,5 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
-    - run: NODE_V8_COVERAGE=./coverage node --test --experimental-test-coverage
-    - run: npx -y c8 report --temp-directory ./coverage --reporter html
-    - run: |
-        chmod -c -R +rX "coverage/" | while read line; do
-          echo "::warning title=Invalid file permissions automatically fixed::$line"
-        done
-    - run: 'rm ./coverage/*.json'
-    - name: upload cov report
-      uses: actions/upload-artifact@v6
-      with:
-          name: cov_data
-          path: coverage/*
+    - run: npm ci
+    - run: npm test
